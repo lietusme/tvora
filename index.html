@@ -264,7 +264,7 @@ const DEFAULT = {
           { length: 2420, height: 1530, joint: 'metal' }, { length: 2580, height: 1530, joint: 'metal' },
           { length: 2500, height: 1530, joint: 'metal' }, { length: 2500, height: 1530, joint: 'metal' },
           { length: 2530, height: 1530, joint: 'metal' } ] } ] },
-    { id: 'B', originX: 0, originY: 15500, labelOffset: { offsetX: -3600, offsetY: 3800 },
+    { id: 'B', originX: 0, originY: 16500, labelOffset: { offsetX: -3600, offsetY: 3800 },
       extensions: [
         { runIndex: 0, afterSegment: 6, direction: 'W', length: 2000 },
         { runIndex: 0, afterSegment: 3, direction: 'E', length: 2000 } ],
@@ -273,7 +273,7 @@ const DEFAULT = {
           { length: 560, height: 1530, joint: 'metal' }, { length: 1040, height: 1530, joint: 'metal', gate: true },
           { length: 550, height: 1530, joint: 'metal' }, { length: 1330, height: 1530, joint: 'metal' },
           { length: 2000, height: 1530, joint: 'metal' }, { length: 2130, height: 1530, joint: 'metal' } ] } ] },
-    { id: 'C', originX: 4500, originY: 15500, labelOffset: { offsetX: 500, offsetY: 2500 },
+    { id: 'C', originX: 4500, originY: 16500, labelOffset: { offsetX: 500, offsetY: 2500 },
       extensions: [
         { runIndex: 0, afterSegment: 0, direction: 'W', length: 2000 },
         { runIndex: 1, afterSegment: 9, direction: 'W', length: 2000 } ],
@@ -486,7 +486,7 @@ function render() {
     const pieces = info ? `(${info.front}+${info.back})x${info.pl}` : '';
     if (l.horiz) {
       // every second label of a run moves outward, with a thin leader to its segment, so neighbours do not collide
-      const far = !l.below && Number(l.ref.split(',')[2]) % 2 === 1;
+      const far = Number(l.ref.split(',')[2]) % 2 === 1;
       const dir = l.below ? 1 : -1, shift = far ? dir * FAR_SHIFT * LF : 0;
       const y1 = l.y - 0.58 * LF + shift, y2 = l.y + 0.73 * LF + shift;
       const t = el('text', { x: l.x, y: y1, 'font-size': LF, 'text-anchor': 'middle', fill: color, 'font-family': 'Arial' });
