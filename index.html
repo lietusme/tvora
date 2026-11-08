@@ -119,7 +119,7 @@
   body.print-view .sheet > svg#plan { height: 150mm; width: 100%; max-width: none; }
   body.print-view .hl-glow { display: none; }
   body.print-view #viewPlan { page-break-after: always; break-after: page; }
-  body.print-view .pg-cut, body.print-view .pg-seg { page-break-before: always; break-before: page; }
+  body.print-view .pg-cut, body.print-view .pg-seg, body.print-view .pg-calc-top { page-break-before: always; break-before: page; }
   body.print-view .card { margin: 0 0 5mm; padding: 0; border: none; background: transparent; break-inside: auto; }
   body.print-view .card h2 { font-size: 12px; margin-bottom: 3mm; }
   body.print-view .card tr { break-inside: avoid; }
@@ -184,6 +184,18 @@
   </menu>
 </dialog>
 <div class="calc" id="viewCalc">
+  <section class="page pg-cut">
+  <div class="card">
+    <h2>Lentų pjaustymas</h2>
+    <div><table id="cutTbl"></table></div>
+  </div>
+  </section>
+  <section class="page pg-seg">
+  <div class="card">
+    <h2>Detalės pagal segmentus</h2>
+    <div><table id="segTbl"></table></div>
+  </div>
+  </section>
   <section class="page pg-calc-top">
   <div class="card">
     <h2>Parametrai</h2>
@@ -216,18 +228,6 @@
   <div class="card">
     <h2>Likučiai</h2>
     <div id="unused"></div>
-  </div>
-  </section>
-  <section class="page pg-cut">
-  <div class="card">
-    <h2>Lentų pjaustymas</h2>
-    <div><table id="cutTbl"></table></div>
-  </div>
-  </section>
-  <section class="page pg-seg">
-  <div class="card">
-    <h2>Detalės pagal segmentus</h2>
-    <div><table id="segTbl"></table></div>
   </div>
   </section>
 </div>
