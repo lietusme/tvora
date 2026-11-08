@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tvora – plano schema</title>
+<style>
+  body { font-family: "Helvetica Neue", Arial, sans-serif; margin: 0; background: #fff; color: #222; font-size: 12px; }
+  button, select, input { font-family: inherit; font-size: 12px; }
+  header { padding: 12px 20px; background: #1f2a33; color: #f4f1ea; }
+  header h1 { font-size: 12px; margin: 0; font-weight: 600; letter-spacing: .4px; }
+  header h1.changed { color: #ffa94d; }
+  .wrap { padding: 16px; }
+  .sheet, .card { background: #fff; border: 1px solid #c9c4b6; box-shadow: 0 2px 8px rgba(0,0,0,.08); padding: 12px 14px; margin: 0 0 16px; }
+  .sheet > svg#plan { display: block; width: 100%; height: auto; }
+  .sheet svg#plan { max-width: 100%; margin: 0 auto; }
+  table.utbl { border-collapse: collapse; font-size: 12px; }
+  table.utbl th, table.utbl td { border-bottom: 1px solid #e5e1d6; padding: 4px 8px; text-align: left; vertical-align: middle; }
+  table.utbl th { background: #f2efe7; color: #1f2a33; }
+  table.utbl svg { display: block; }
+  button { padding: 5px 10px; margin-top: 8px; cursor: pointer; }
+  .hdr-reset { margin: 0; background: #ffa94d; color: #1f2a33; border: 0; padding: 6px 12px; font-weight: 700; }
+  .msg { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 100; max-width: 92vw; box-sizing: border-box; padding: 8px 16px; border-radius: 4px; background: #2e6b3a; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,.2); text-align: center; opacity: 0; pointer-events: none; transition: opacity .4s ease; }
+  .msg.err { background: #a3361f; }
+  .msg.show { opacity: 1; }
+  .menu { position: relative; }
+  .kebab { display: inline-flex; align-items: center; justify-content: center; padding: 6px 10px; }
+  .menu-list { position: absolute; right: 0; top: calc(100% + 6px); z-index: 10; display: flex; flex-direction: column; min-width: 220px; background: #fff; border: 1px solid #c9c4b6; box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+  .menu-list button { margin: 0; text-align: left; background: transparent; color: #1f2a33; border: 0; padding: 8px 12px; }
+  .menu-list button:hover { background: #f4f1ea; }
+  table.utbl { border-collapse: collapse; font-size: 12px; }
+  table.utbl th, table.utbl td { border-bottom: 1px solid #e5e1d6; padding: 4px 8px; text-align: left; vertical-align: middle; }
+  table.utbl th { background: #f2efe7; color: #1f2a33; }
+  table.utbl svg { display: block; }
+  #jsonText { width: min(640px, 80vw); font-family: Menlo, Consolas, monospace; font-size: 12px; }
+  .err { color: #a3361f; font-size: 12px; min-height: 1em; margin-top: 6px; white-space: pre-wrap; }
+  #jsonDlg menu button { margin-top: 0; }
+  [data-ref], [data-seg] { cursor: pointer; }
+  [data-ref]:hover { opacity: .7; }
+  .hl-glow { pointer-events: none; }
+  dialog { border: 1px solid #c9c4b6; border-radius: 4px; padding: 16px; font-family: inherit; font-size: 12px; min-width: 340px; }
+  dialog::backdrop { background: rgba(31,42,51,.35); }
+  dialog h3 { margin: 0; font-size: 12px; }
+  .dlg-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 12px; }
+  .dlg-x { margin: 0; background: transparent; border: 0; padding: 4px; line-height: 0; color: #555; }
+  .dlg-x:hover { color: #1f2a33; }
+  dialog label { display: grid; grid-template-columns: 130px minmax(0, 1fr); align-items: center; gap: 8px; margin-bottom: 8px; }
+  dialog input[type=number] { width: 100%; padding: 4px; margin: 0; box-sizing: border-box; }
+  dialog menu { display: flex; gap: 8px; justify-content: flex-end; margin: 12px 0 0; padding: 0; }
+  dialog button { margin-top: 0; }
+  dialog .btn-save, dialog .btn-cancel { min-width: 110px; color: #fff; border: 1px solid transparent; padding: 6px 12px; }
+  dialog .btn-save { background: #2e7d32; border-color: #256628; }
+  dialog .btn-cancel { background: #c62828; border-color: #a51f1f; }
+  body.modal-open { overflow: hidden; }
+  .hidden { display: none !important; }
+  header { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+  header h1 { flex: 1; }
+  .pv-open { margin: 0; background: transparent; color: #f4f1ea; border: 1px solid #6b7782; padding: 6px 12px; }
+  .pv-bar button { margin: 0; }
+  .calc { padding: 0; }
+  .plan-head { padding: 0; }
+  .card h2 { font-size: 12px; font-weight: 700; margin: 0 0 10px; color: #1f2a33; }
+  .sub-h { font-size: 12px; font-weight: 700; color: #555; margin: 4px 0 8px; }
+
+  .plan-title { font-size: 12px; margin: 0; color: #1f2a33; font-family: Arial, sans-serif; }
+  .plan-title.changed { color: #b5651d; }
+  body:not(.print-view) tr.hl td { background: #d6e8f7; font-weight: 700; }
+  body:not(.print-view) #plan line.hl-fill { stroke: #d6e8f7; }
+  body:not(.print-view) #plan text.hl, body:not(.print-view) #plan text.hl tspan { fill: #1f6fb2; }
+  .plan-sub { margin: 4px 0 0; color: #555; font-size: 12px; }
+  .segnav { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; }
+  .seg-svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+  .segnav button, .segnav select { margin: 0; height: 28px; padding: 0 10px; box-sizing: border-box; }
+  .segnav select { font-weight: 700; min-width: 150px; }
+  .grid, .prow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 16px; margin-bottom: 10px; }
+  .prow label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; }
+  .prow input { padding: 4px; font-size: 12px; width: 100%; box-sizing: border-box; }
+  .split { display: flex; align-items: center; gap: 8px; width: 100%; }
+  .split input[type=number] { flex: 1 1 0; min-width: 0; width: auto; }
+  .split > span { flex: 0 0 auto; }
+  .card table { border-collapse: collapse; width: 100%; }
+  .card th, .card td { border-bottom: 1px solid #e5e1d6; padding: 4px 6px; text-align: left; font-size: 12px; }
+  .card th { background: #f2efe7; }
+  #segTbl th, #cutTbl th { cursor: pointer; user-select: none; }
+  #segTbl tr:not(:first-child):not(.tot) { cursor: pointer; }
+  body:not(.print-view) #segTbl th[data-sort="asc"]::after, body:not(.print-view) #cutTbl th[data-sort="asc"]::after { content: " \25B2"; }
+  body:not(.print-view) #segTbl th[data-sort="desc"]::after, body:not(.print-view) #cutTbl th[data-sort="desc"]::after { content: " \25BC"; }
+  .card td.wrapcell { white-space: normal; word-break: break-word; }
+  .card tr.tot td { font-weight: 700; background: #f2efe7; }
+  .gate { color: #b5651d; }
+  .bad { color: #a3361f; font-weight: 700; }
+  .sumline { line-height: 1.7; }
+  .warn { color: #a3361f; font-size: 12px; margin-top: 6px; }
+  .seg-link { cursor: pointer; text-decoration: underline; }
+  .seg-link:hover { opacity: .7; }
+  @media (max-width: 1000px) { .wrap { padding: 8px; } }
+  @media (max-width: 640px) {
+    header { padding: 10px 12px; gap: 8px; flex-wrap: nowrap; }
+    header h1 { flex: 1 1 auto; min-width: 0; }
+    .menu { flex: 0 0 auto; }
+    .wrap { padding: 8px; }
+    .card, .sheet { margin: 0 0 12px; padding: 8px 10px; }
+    .card th, .card td { padding: 3px; }
+    .plan-head { padding: 0; }
+    .grid, .prow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .segnav { flex-wrap: wrap; gap: 6px; }
+    .segnav select { min-width: 0; max-width: 60vw; }
+    dialog { max-width: 92vw; }
+  }
+  @page { size: A4; margin: 15mm; }
+  body.print-view { background: #fff; }
+  body.print-view * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body.print-view header { display: none; }
+  body.print-view .pv-open, body.print-view .menu, body.print-view .msg, body.print-view dialog { display: none !important; }
+  body.print-view .wrap, body.print-view .calc { padding: 0; margin: 0; display: block; }
+  body.print-view .hidden { display: block !important; }
+  body.print-view .page { padding: 0; margin: 0; min-height: 0; width: auto; box-shadow: none; background: none; }
+  body.print-view .sheet { border: none; box-shadow: none; padding: 0; margin: 0; }
+  body.print-view .sheet > svg#plan { height: 150mm; width: 100%; max-width: none; }
+  body.print-view .hl-glow { display: none; }
+  body.print-view #viewPlan { page-break-after: always; break-after: page; }
+  body.print-view .pg-cut, body.print-view .pg-seg { page-break-before: always; break-before: page; }
+  body.print-view .card { margin: 0 0 5mm; padding: 0; border: none; background: transparent; break-inside: auto; }
+  body.print-view .card h2 { font-size: 12px; margin-bottom: 3mm; }
+  body.print-view .card tr { break-inside: avoid; }
+  body.print-view .card thead { display: table-header-group; }
+  body.print-view .card th { background: #eee; }
+  body.print-view .grid, body.print-view .prow { gap: 3mm 5mm; margin-bottom: 3mm; }
+  body.print-view .prow input { font-size: 12px; }
+  .pv-bar { display: none; gap: 8px; align-items: center; justify-content: center; padding: 10px; background: #1f2a33; }
+  body.print-view .pv-bar { display: flex; }
+  body.preview-on { background: #8c8c8c; }
+  body.preview-on .page {
+    width: 210mm; min-height: 297mm; box-sizing: border-box; margin: 10mm auto; padding: 15mm;
+    background-color: #fff; box-shadow: 0 2px 12px rgba(0,0,0,.35);
+  }
+  body.preview-on .pv-bar { margin-bottom: 0; }
+  @media print {
+    .pv-bar, .screen-only { display: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="pv-bar">
+  <button id="pvPrint">Spausdinti</button>
+  <button id="pvClose">Uždaryti peržiūrą</button>
+</div>
+<div class="msg" id="msg" role="status" aria-live="polite"></div>
+<header><h1 id="title">Tvora – medienos planas</h1>
+  <button class="hdr-reset hidden" id="reset">Atstatyti numatytus</button>
+  <div class="menu">
+    <button class="pv-open kebab" id="menuBtn" aria-haspopup="true" aria-expanded="false" aria-label="Daugiau veiksmų"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="2.5" r="1.5" fill="currentColor"/><circle cx="7" cy="7" r="1.5" fill="currentColor"/><circle cx="7" cy="11.5" r="1.5" fill="currentColor"/></svg></button>
+    <div class="menu-list hidden" id="menu">
+      <button id="copyJson">Kopijuoti JSON</button>
+      <button id="pasteJson">Įklijuoti JSON</button>
+      <button id="pvOpen">Spausdinimo peržiūra</button>
+    </div>
+  </div>
+</header>
+<div class="wrap page" id="viewPlan">
+  <div class="sheet">
+    <div class="plan-head">
+      <h2 class="plan-title" id="planTitle">Tvoros brėžinys</h2>
+      <p class="plan-sub">Plano schema, viršaus vaizdas. Visi matmenys mm.</p>
+    </div>
+    <svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+  <div class="card seg-card screen-only">
+    <h2>Segmento peržiūra</h2>
+    <div class="segnav">
+      <button id="planSegPrev" type="button">&lt;</button>
+      <select id="planSegSelect" aria-label="Segmentas"></select>
+      <button id="planSegNext" type="button">&gt;</button>
+    </div>
+    <svg id="planSegPreview" xmlns="http://www.w3.org/2000/svg" class="seg-svg"></svg>
+  </div>
+<dialog id="jsonDlg">
+  <div class="dlg-head"><h3>Įklijuoti JSON</h3><button type="button" class="dlg-x" id="jsonX" aria-label="Uždaryti"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 1L11 11M11 1L1 11" stroke="currentColor" stroke-width="1.6"/></svg></button></div>
+  <textarea id="jsonText" rows="18" spellcheck="false" placeholder="Įklijuokite JSON čia"></textarea>
+  <div class="err" id="jsonErr"></div>
+  <menu>
+    <button type="button" id="jsonCancel" class="btn-cancel">Atšaukti</button>
+    <button type="button" id="jsonLoad" class="btn-save">Įkelti</button>
+  </menu>
+</dialog>
+<div class="calc" id="viewCalc">
+  <section class="page pg-calc-top">
+  <div class="card">
+    <h2>Parametrai</h2>
+    <h3 class="sub-h">Segmento detalės</h3>
+    <div class="prow">
+      <label>Viršutinis tarpas, mm <input type="number" id="cTop" value="65" step="1"></label>
+      <label>Apatinis tarpas, mm <input type="number" id="cBottom" value="30" step="1"></label>
+      <label>Persidengimas, mm
+        <input type="number" id="cOverlap" min="0" max="200" step="1" value="20">
+      </label>
+    </div>
+    <h3 class="sub-h">Medžiagos</h3>
+    <div class="prow">
+      <label>Lentos storis, mm <input type="number" id="cThick" value="25" step="1"></label>
+      <label>Lentos plotis, mm <input type="number" id="cWidth" value="103" step="1"></label>
+      <label>Lentos ilgis (sandėlyje), mm <input type="number" id="cStock" value="5400" step="10"></label>
+      <label>Kaina, EUR/m³ be PVM <input type="number" id="cPrice" value="310" step="1"></label>
+    </div>
+    <h3 class="sub-h">Likučiai</h3>
+    <div class="prow">
+      <label>Galų nuostolis lentoje, mm <input type="number" id="cTrim" value="40" step="1"></label>
+      <label>Pjūvio plotis, mm <input type="number" id="cKerf" value="2" step="1"></label>
+      <label>Atsarga, % <input type="number" id="cSpare" value="0" step="1"></label>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Suvestinė</h2>
+    <div id="sum"></div>
+  </div>
+  <div class="card">
+    <h2>Likučiai</h2>
+    <div id="unused"></div>
+  </div>
+  </section>
+  <section class="page pg-cut">
+  <div class="card">
+    <h2>Lentų pjaustymas</h2>
+    <div><table id="cutTbl"></table></div>
+  </div>
+  </section>
+  <section class="page pg-seg">
+  <div class="card">
+    <h2>Detalės pagal segmentus</h2>
+    <div><table id="segTbl"></table></div>
+  </div>
+  </section>
+</div>
+</div>
+<dialog id="dlg">
+  <form method="dialog">
+    <div class="dlg-head"><h3 id="dlgTitle"></h3><button value="cancel" formnovalidate class="dlg-x" aria-label="Uždaryti"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 1L11 11M11 1L1 11" stroke="currentColor" stroke-width="1.6"/></svg></button></div>
+    <label>Ilgis, mm <input type="number" id="dlgLen" step="1" required></label>
+    <label>Aukštis H, mm <input type="number" id="dlgH" step="1" required></label>
+    <menu>
+      <button value="cancel" formnovalidate class="btn-cancel">Atšaukti</button>
+      <button id="dlgOk" value="ok" class="btn-save">Išsaugoti</button>
+    </menu>
+  </form>
+</dialog>
+
+<script>
+const DEFAULT = {
+  sections: [
+    { id: 'A', originX: 0, originY: 0, labelOffset: { offsetX: -2600, offsetY: 6000 },
+      extensions: [
+        { runIndex: 0, afterSegment: 0, direction: 'E', length: 2000 },
+        { runIndex: 2, afterSegment: 5, direction: 'E', length: 2000 } ],
+      runs: [
+        { name: 'Apatinė (D→K)', startX: 12410, startY: 12020, direction: 'W', startJoint: 'metal', labelPosition: 'below', segments: [
+          { length: 2520, height: 1710, joint: 'metal' }, { length: 2500, height: 1710, joint: 'metal' },
+          { length: 2490, height: 1710, joint: 'metal' }, { length: 2560, height: 1710, joint: 'metal' },
+          { length: 2340, height: 1710, joint: 'brick' }, { length: 1400, height: 1710, joint: 'metal' } ] },
+        { name: 'Kairė (vertikali, A→V)', startX: 0, startY: 12020, direction: 'N', startJoint: 'brick2', labelSide: 'R', segments: [
+          { length: 4500, height: 1700, joint: 'brick', gate: true }, { length: 1900, height: 1720, joint: 'brick' },
+          { length: 1800, height: 1720, joint: 'brick' }, { length: 1920, height: 1720, joint: 'brick' },
+          { length: 1900, height: 1630, joint: 'brick' } ] },
+        { name: 'Viršutinė (L→D)', startX: 0, startY: 0, direction: 'E', startJoint: 'brick', segments: [
+          { length: 2420, height: 1530, joint: 'metal' }, { length: 2580, height: 1530, joint: 'metal' },
+          { length: 2500, height: 1530, joint: 'metal' }, { length: 2500, height: 1530, joint: 'metal' },
+          { length: 2530, height: 1530, joint: 'metal' } ] } ] },
+    { id: 'B', originX: 0, originY: 15500, labelOffset: { offsetX: -3600, offsetY: 3800 },
+      extensions: [
+        { runIndex: 0, afterSegment: 6, direction: 'W', length: 2000 },
+        { runIndex: 0, afterSegment: 3, direction: 'E', length: 2000 } ],
+      runs: [
+        { name: 'Tarpai (vertikali)', startX: 0, startY: 0, direction: 'S', startJoint: 'metal', labelSide: 'L', segments: [
+          { length: 560, height: 1530, joint: 'metal' }, { length: 1040, height: 1530, joint: 'metal', gate: true },
+          { length: 550, height: 1530, joint: 'metal' }, { length: 1330, height: 1530, joint: 'metal' },
+          { length: 2000, height: 1530, joint: 'metal' }, { length: 2130, height: 1530, joint: 'metal' } ] } ] },
+    { id: 'C', originX: 4500, originY: 15500, labelOffset: { offsetX: 500, offsetY: 2500 },
+      extensions: [
+        { runIndex: 0, afterSegment: 0, direction: 'W', length: 2000 },
+        { runIndex: 1, afterSegment: 9, direction: 'W', length: 2000 } ],
+      runs: [
+        { name: 'Viršutinė', startX: 0, startY: 0, direction: 'E', startJoint: 'metal', segments: [
+          { length: 2370, height: 1530, joint: 'metal' }, { length: 2210, height: 1530, joint: 'brick' } ] },
+        { name: 'Dešinė (vertikali)', startX: 4580, startY: 0, direction: 'S', startJoint: 'brick', labelSide: 'R', segments: [
+          { length: 1730, height: 1600, joint: 'brick' }, { length: 1610, height: 1600, joint: 'brick' },
+          { length: 1520, height: 1600, joint: 'brick' }, { length: 1100, height: 1800, joint: 'brick' },
+          { length: 5000, height: 1600, joint: 'brick', gate: true }, { length: 1370, height: 1610, joint: 'brick' },
+          { length: 1430, height: 1620, joint: 'brick' }, { length: 1420, height: 1660, joint: 'brick' },
+          { length: 1530, height: 1690, joint: 'brick' } ] } ] }
+  ],
+  dimensions: {
+    brick: { width: 320, depth: 320 },
+    foundationWidth: 250,
+    metalPillar: { width: 60, depth: 40 },
+    crossbrace: { width: 25, length: 50, offsetFromTop: 25 }
+  }
+};
+
+const omitUndefined = o => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined));
+
+// Converts the full-name JSON format to the short internal structure used by the drawing and calculator.
+function toInternal(ext) {
+  return {
+    dimensions: JSON.parse(JSON.stringify(ext.dimensions)),
+    sections: ext.sections.map(sec => ({
+      id: sec.id, ox: sec.originX, oy: sec.originY,
+      tag: { dx: sec.labelOffset.offsetX, dy: sec.labelOffset.offsetY },
+      exts: (sec.extensions || []).map(e => ({ run: e.runIndex, at: e.afterSegment, dir: e.direction, len: e.length })),
+      runs: sec.runs.map(r => ({
+        name: r.name, sx: r.startX, sy: r.startY, dir: r.direction, start: r.startJoint,
+        lbl: r.labelPosition, side: r.labelSide,
+        segs: r.segments.map(s => ({ len: s.length, h: s.height, joint: s.joint, gate: s.gate }))
+      }))
+    }))
+  };
+}
+
+function toExternal(d) {
+  return {
+    sections: d.sections.map(sec => ({
+      id: sec.id, originX: sec.ox, originY: sec.oy,
+      labelOffset: { offsetX: sec.tag.dx, offsetY: sec.tag.dy },
+      extensions: sec.exts.map(e => ({ runIndex: e.run, afterSegment: e.at, direction: e.dir, length: e.len })),
+      runs: sec.runs.map(r => omitUndefined({
+        name: r.name, startX: r.sx, startY: r.sy, direction: r.dir, startJoint: r.start,
+        labelPosition: r.lbl, labelSide: r.side,
+        segments: r.segs.map(s => omitUndefined({ length: s.len, height: s.h, joint: s.joint, gate: s.gate }))
+      }))
+    })),
+    dimensions: d.dimensions
+  };
+}
+
+let DATA = null;
+
+const STORE_KEY = 'tvora-fence-layout-v2';
+const CALC_KEY = 'tvora-fence-calc';
+
+const DEFAULT_LAYOUT_JSON = JSON.stringify(toExternal(toInternal(DEFAULT)));
+
+function layoutChanged() {
+  return JSON.stringify(toExternal(DATA)) !== DEFAULT_LAYOUT_JSON;
+}
+
+function calcChanged() {
+  return [...document.querySelectorAll('#viewCalc input')].some(i => i.value !== i.defaultValue);
+}
+
+// Stores only real changes. With no changes nothing is kept, so the hardcoded defaults load.
+function syncStorage() {
+  const lc = layoutChanged(), cc = calcChanged();
+  try {
+    if (lc) localStorage.setItem(STORE_KEY, JSON.stringify(toExternal(DATA))); else localStorage.removeItem(STORE_KEY);
+    if (cc) saveCalc(); else localStorage.removeItem(CALC_KEY);
+  } catch (e) { console.warn('Nepavyko išsaugoti:', e); }
+  return lc || cc;
+}
+
+function saveCalc() {
+  const vals = {};
+  document.querySelectorAll('#viewCalc input').forEach(i => { vals[i.id] = i.value; });
+  try { localStorage.setItem(CALC_KEY, JSON.stringify(vals)); } catch (e) { console.warn('Nepavyko išsaugoti skaičiuoklės:', e); }
+}
+
+function loadSaved() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) return withFixedDimensions(toInternal(validate(JSON.parse(raw))));
+  } catch (e) { console.warn('Išsaugotas planas ignoruojamas:', e.message); }
+  return toInternal(DEFAULT);
+}
+
+// Dimensions are fixed in the hardcoded JSON and never taken from storage or pasted data.
+function withFixedDimensions(data) {
+  data.dimensions = JSON.parse(JSON.stringify(DEFAULT.dimensions));
+  return data;
+}
+
+function loadCalc() {
+  try {
+    const vals = JSON.parse(localStorage.getItem(CALC_KEY) || 'null');
+    if (vals) document.querySelectorAll('#viewCalc input').forEach(i => { if (i.id in vals) i.value = vals[i.id]; });
+  } catch (e) { console.warn('Išsaugoti skaičiuoklės parametrai ignoruojami:', e.message); }
+}
+const DIR = { E: [1, 0], W: [-1, 0], S: [0, 1], N: [0, -1] };
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const isBrick = t => t === 'brick' || t === 'brick2';
+function geometry() {
+  const segs = [], joints = [], labels = [], secLabels = [], exts = [];
+  DATA.sections.forEach((sec, si) => {
+    secLabels.push({ x: sec.ox + sec.tag.dx, y: sec.oy + sec.tag.dy, t: sec.id });
+    let n = 0;
+    const runPts = [];
+    sec.runs.forEach((run, ri) => {
+      const [dx, dy] = DIR[run.dir];
+      const horiz = dx !== 0;
+      let x = sec.ox + run.sx, y = sec.oy + run.sy;
+      const pts = [[x, y]];
+      joints.push({ x, y, type: run.start, horiz });
+      run.segs.forEach((s, gi) => {
+        n++;
+        const x2 = x + dx * s.len, y2 = y + dy * s.len;
+        const tag = sec.id + n, ref = `${si},${ri},${gi}`;
+        segs.push({ x1: x, y1: y, x2, y2, gate: !!s.gate, ref, tag });
+        const mx = (x + x2) / 2, my = (y + y2) / 2;
+        labels.push({ x: mx, y: horiz ? my + (run.lbl === 'below' ? LABEL_GAP_BELOW : -LABEL_GAP_ABOVE) : my, horiz, below: run.lbl === 'below', side: run.side || 'R', len: s.len, h: s.h, gate: !!s.gate, tag, ref });
+        joints.push({ x: x2, y: y2, type: s.joint, horiz });
+        pts.push([x2, y2]);
+        x = x2; y = y2;
+      });
+      runPts.push(pts);
+    });
+    (sec.exts || []).forEach(e => {
+      const [px, py] = runPts[e.run][e.at];
+      const [dx, dy] = DIR[e.dir];
+      exts.push({ x1: px, y1: py, x2: px + dx * e.len, y2: py + dy * e.len });
+    });
+  });
+  return { segs, joints, labels, secLabels, exts };
+}
+
+function el(tag, attrs, text) {
+  const e = document.createElementNS(SVG_NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+function render() {
+  const changed = syncStorage();
+  const title = document.getElementById('title');
+  title.textContent = changed ? 'Tvora – medienos planas (pakeista)' : 'Tvora – medienos planas';
+  title.classList.toggle('changed', changed);
+  document.getElementById('reset').classList.toggle('hidden', !changed);
+  const planTitle = document.getElementById('planTitle');
+  planTitle.textContent = changed ? 'Tvoros brėžinys (pakeista)' : 'Tvoros brėžinys';
+  planTitle.classList.toggle('changed', changed);
+  const g = geometry();
+  const rowsByTag = new Map(calculate(readCalc()).rows.map(r => [r.tag, r]));
+  const svg = document.getElementById('plan');
+  svg.innerHTML = '';
+
+  const xs = [], ys = [];
+  g.segs.forEach(s => { xs.push(s.x1, s.x2); ys.push(s.y1, s.y2); });
+  g.joints.forEach(j => { xs.push(j.x); ys.push(j.y); });
+  g.labels.forEach(l => { xs.push(l.x - 2600, l.x + 2600); ys.push(l.y); });
+  g.secLabels.forEach(l => { xs.push(l.x); ys.push(l.y); });
+  g.exts.forEach(e => { xs.push(e.x1, e.x2); ys.push(e.y1, e.y2); });
+  const minX = Math.min(...xs) - 2500, maxX = Math.max(...xs) + 2500;
+  const minY = Math.min(...ys) - 1200, maxY = Math.max(...ys) + 700;
+  svg.setAttribute('viewBox', `${minX} ${minY} ${maxX - minX} ${maxY - minY}`);
+  const LF = LABEL_PX * (maxX - minX) / PLAN_PX;
+
+  svg.appendChild(el('rect', { x: minX, y: minY, width: maxX - minX, height: maxY - minY, fill: '#fff' }));
+
+  for (const e of g.exts) {
+    svg.appendChild(el('line', { x1: e.x1, y1: e.y1, x2: e.x2, y2: e.y2, stroke: '#6b6b6b', 'stroke-width': 70, 'stroke-dasharray': '90 150' }));
+  }
+
+  for (const s of g.segs) {
+    const hit = { 'data-seg': s.tag, 'data-tag': s.tag };
+    svg.appendChild(el('line', { x1: s.x1, y1: s.y1, x2: s.x2, y2: s.y2, stroke: s.gate ? '#b5651d' : '#2b2b2b', 'stroke-width': DATA.dimensions.foundationWidth, ...hit }));
+    svg.appendChild(el('line', { x1: s.x1, y1: s.y1, x2: s.x2, y2: s.y2, stroke: '#fbfaf6', 'stroke-width': DATA.dimensions.foundationWidth - 40, ...hit }));
+    if (s.gate) svg.appendChild(el('line', { x1: s.x1, y1: s.y1, x2: s.x2, y2: s.y2, stroke: '#b5651d', 'stroke-width': 50, 'stroke-dasharray': '300 200', ...hit }));
+  }
+
+  const dm = DATA.dimensions, bw = dm.brick.width, bd = dm.brick.depth;
+  for (const j of g.joints) {
+    if (j.type === 'brick2') {
+      // corner column: lower 320 square centred on the joint, upper 320 square stacked above it, merged
+      svg.appendChild(el('rect', { x: j.x - bw / 2, y: j.y - 1.5 * bd, width: bw, height: 2 * bd, fill: '#c46a4c', stroke: '#2b2b2b', 'stroke-width': 25 }));
+    } else if (isBrick(j.type)) {
+      svg.appendChild(el('rect', { x: j.x - bw / 2, y: j.y - bd / 2, width: bw, height: bd, fill: '#c46a4c', stroke: '#2b2b2b', 'stroke-width': 25 }));
+    } else if (j.type === 'metal') {
+      const d = 170;
+      svg.appendChild(el('line', j.horiz
+        ? { x1: j.x, y1: j.y - d, x2: j.x, y2: j.y + d, stroke: '#2b2b2b', 'stroke-width': 70 }
+        : { x1: j.x - d, y1: j.y, x2: j.x + d, y2: j.y, stroke: '#2b2b2b', 'stroke-width': 70 }));
+    }
+  }
+
+  for (const l of g.labels) {
+    const color = l.gate ? '#b5651d' : '#111';
+    const grp = el('g', { 'data-ref': l.ref, 'data-tag': l.tag });
+    const info = rowsByTag.get(l.tag);
+    const dims = `${l.gate ? 'VARTAI ' : ''}W${l.len}xH${l.h}`;
+    const pieces = info ? `(${info.front}+${info.back})x${info.pl}` : '';
+    if (l.horiz) {
+      // every second label of a run moves outward, with a thin leader to its segment, so neighbours do not collide
+      const far = !l.below && Number(l.ref.split(',')[2]) % 2 === 1;
+      const dir = l.below ? 1 : -1, shift = far ? dir * FAR_SHIFT * LF : 0;
+      const y1 = l.y - 0.58 * LF + shift, y2 = l.y + 0.73 * LF + shift;
+      const t = el('text', { x: l.x, y: y1, 'font-size': LF, 'text-anchor': 'middle', fill: color, 'font-family': 'Arial' });
+      t.appendChild(el('tspan', { 'font-weight': 700, fill: '#1f2a33' }, l.tag + ' '));
+      t.appendChild(document.createTextNode(dims));
+      grp.appendChild(t);
+      grp.appendChild(el('text', { x: l.x, y: y2, 'font-size': LF, 'text-anchor': 'middle', fill: '#555', 'font-family': 'Arial' }, pieces));
+      if (far) {
+        const segY = l.below ? l.y - LABEL_GAP_BELOW : l.y + LABEL_GAP_ABOVE;
+        const innerY = l.below ? y1 - 0.75 * LF : y2 + 0.25 * LF;
+        grp.insertBefore(el('line', { x1: l.x, y1: innerY, x2: l.x, y2: segY, stroke: '#999', 'stroke-width': 0.03 * LF }), grp.firstChild);
+      }
+    } else {
+      const left = l.side === 'L';
+      const x = left ? l.x - 1.2 * LF : l.x + 1.2 * LF, anchor = left ? 'end' : 'start';
+      const t = el('text', { x, y: l.y - 0.32 * LF, 'font-size': LF, 'text-anchor': anchor, fill: color, 'font-family': 'Arial' });
+      t.appendChild(el('tspan', { 'font-weight': 700, fill: '#1f2a33' }, l.tag + ' '));
+      t.appendChild(document.createTextNode(dims));
+      grp.appendChild(t);
+      grp.appendChild(el('text', { x, y: l.y + 0.98 * LF, 'font-size': LF, 'text-anchor': anchor, fill: '#555', 'font-family': 'Arial' }, pieces));
+    }
+    svg.appendChild(grp);
+  }
+
+
+  renderCalc();
+  renderSegPreview();
+  fitLabels();
+}
+
+const dlg = document.getElementById('dlg');
+let editing = null;
+
+function openModal(d) {
+  d.showModal();
+  document.body.classList.add('modal-open');
+}
+
+document.getElementById('plan').addEventListener('click', e => {
+  const segBar = e.target.closest('[data-seg]');
+  if (segBar) {
+    selectSegment(segBar.dataset.seg);
+    return;
+  }
+  const target = e.target.closest('[data-ref]');
+  if (!target) return;
+  const [si, ri, gi] = target.dataset.ref.split(',').map(Number);
+  const seg = DATA.sections[si].runs[ri].segs[gi];
+  editing = { si, ri, gi };
+  document.getElementById('dlgTitle').textContent = `Segmentas ${target.dataset.tag}`;
+  document.getElementById('dlgLen').value = seg.len;
+  document.getElementById('dlgH').value = seg.h;
+  openModal(dlg);
+});
+
+dlg.addEventListener('close', () => {
+  if (dlg.returnValue !== 'ok' || !editing) return;
+  const seg = DATA.sections[editing.si].runs[editing.ri].segs[editing.gi];
+  seg.len = parseFloat(document.getElementById('dlgLen').value) || seg.len;
+  seg.h = parseFloat(document.getElementById('dlgH').value) || seg.h;
+  render();
+});
+
+const CALC_IDS = { topGap: 'cTop', bottomGap: 'cBottom', overlap: 'cOverlap', thick: 'cThick', width: 'cWidth', stock: 'cStock', trim: 'cTrim', kerf: 'cKerf', spare: 'cSpare', price: 'cPrice' };
+
+function readCalc() {
+  const c = {};
+  for (const k in CALC_IDS) c[k] = parseFloat(document.getElementById(CALC_IDS[k]).value) || 0;
+  return c;
+}
+
+function segmentList() {
+  const out = [];
+  for (const sec of DATA.sections) {
+    let n = 0;
+    for (const run of sec.runs) {
+      let prev = run.start;
+      for (const s of run.segs) {
+        n++;
+        out.push({ tag: sec.id + n, sec: sec.id, num: n, len: s.len, h: s.h, gate: !!s.gate, startJoint: prev, endJoint: s.joint });
+        prev = s.joint;
+      }
+    }
+  }
+  return out.sort((a, b) => a.sec.localeCompare(b.sec) || a.num - b.num);
+}
+
+const tagCmp = (x, y) => {
+  const mx = x.match(/^(\D+)(\d+)$/), my = y.match(/^(\D+)(\d+)$/);
+  return mx[1].localeCompare(my[1]) || mx[2] - my[2];
+};
+const byName = (a, b) => tagCmp(a.name, b.name);
+
+// Boards alternate between the two faces, neighbours are "spacing" apart, so each face repeats every 2 × spacing.
+// Overlap = 2 × width − 2 × spacing: how far each board laps over its two neighbours on the opposite face
+// (same quantity as the spreadsheet's 2×100−20). Boards span exactly from the start column to the end column.
+function boardFit(s, total, c) {
+  const d = DATA.dimensions;
+  const span = s.len - insetOf(s.startJoint, d) - insetOf(s.endJoint, d);
+  const spacing = (span - c.width) / (total - 1);
+  return { span, spacing, pitch: 2 * spacing, gap: 2 * spacing - c.width, overlap: 2 * c.width - 2 * spacing };
+}
+
+// Board count per segment for the target overlap (c.overlap):
+//   Chooses the total whose overlap is closest to the target. Totals where boards would touch
+//   (gap ≤ 0) are skipped. On a tie an even total (equal boards on both faces) is preferred.
+//   alts: up to two neighbouring totals either side with a positive overlap, for the warning text.
+function chooseBoards(s, c) {
+  const cands = [];
+  for (let total = 2; total <= 600; total++) {
+    const f = boardFit(s, total, c);
+    if (f.gap <= 0) continue;
+    cands.push({ total, ...f, dist: Math.abs(f.overlap - c.overlap) });
+  }
+  if (!cands.length) return { total: 2, front: 1, back: 1, span: boardFit(s, 2, c).span, spacing: NaN, pitch: NaN, gap: NaN, overlap: NaN, alts: [] };
+  const best = cands.reduce((b, x) => (x.dist < b.dist - 1e-9 || (Math.abs(x.dist - b.dist) <= 1e-9 && x.total % 2 === 0 && b.total % 2 === 1) ? x : b));
+  const alts = cands.filter(x => x.total !== best.total && Math.abs(x.total - best.total) <= 2 && x.overlap > 0)
+    .map(x => ({ front: Math.ceil(x.total / 2), back: Math.floor(x.total / 2), overlap: x.overlap }));
+  return { ...best, front: Math.ceil(best.total / 2), back: Math.floor(best.total / 2), alts };
+}
+
+function calculate(c) {
+  const cap = c.stock - c.trim;
+  const rows = segmentList().map(s => {
+    const pl = s.h - c.topGap - c.bottomGap;
+    const fc = chooseBoards(s, c);
+    const base = fc.total;
+    const count = Math.ceil(base * (1 + c.spare / 100) - 1e-9);
+    // warned when the overlap is more than 50 % above or below the target
+    const offTarget = Number.isFinite(fc.overlap) && (fc.overlap > 1.5 * c.overlap || fc.overlap < 0.5 * c.overlap);
+    return { ...s, pl, base, count, front: fc.front, back: fc.back, gap: fc.gap, overlap: fc.overlap, offTarget, alts: fc.alts };
+  });
+  const pieces = [];
+  rows.forEach(r => { for (let i = 0; i < r.count; i++) pieces.push({ name: r.tag, len: r.pl }); });
+  pieces.sort((a, b) => b.len - a.len || byName(a, b));
+
+  const boards = [];
+  for (const p of pieces) {
+    let b = boards.find(x => x.used + p.len + (x.items.length ? c.kerf : 0) <= cap);
+    if (!b) { b = { items: [], used: 0 }; boards.push(b); }
+    b.used += p.len + (b.items.length ? c.kerf : 0);
+    b.items.push(p);
+  }
+  boards.forEach(b => { b.items.sort(byName); b.rem = cap - b.used; });
+  return { rows, boards, cap, pieces };
+}
+
+// Click a column header to sort. Secondary key: segment name in the segment table, "Lentų" in the cut table.
+// The sort state survives recalculation; the totals row always stays last.
+const tableSort = { segTbl: { col: 0, dir: 1 }, cutTbl: { col: null, dir: 1 } };
+const SECONDARY = { segTbl: 0, cutTbl: 1 };
+
+function cellNumber(t) {
+  if (t.includes('+') && !t.includes('x')) return t.split('+').reduce((a, p) => a + (parseFloat(p) || 0), 0);
+  return parseFloat(t);
+}
+
+function cmpCells(a, b) {
+  const x = a.trim(), y = b.trim();
+  if (/^[A-C]\d+/.test(x) && /^[A-C]\d+/.test(y)) return tagCmp(x.split(/\s+/)[0], y.split(/\s+/)[0]);
+  const nx = cellNumber(x), ny = cellNumber(y);
+  if (!isNaN(nx) && !isNaN(ny) && nx !== ny) return nx - ny;
+  return x.localeCompare(y, 'lt', { numeric: true });
+}
+
+// Cells with data-num (the Segmentai count) compare by that number.
+function cellCmp(a, b) {
+  if (a.dataset.num !== undefined && b.dataset.num !== undefined) return Number(a.dataset.num) - Number(b.dataset.num);
+  return cmpCells(a.textContent, b.textContent);
+}
+
+function applySort(id) {
+  const st = tableSort[id];
+  const table = document.getElementById(id);
+  const rows = [...table.rows];
+  const head = rows.shift();
+  if (!head) return;
+  const tot = rows.filter(r => r.classList.contains('tot'));
+  const data = rows.filter(r => !r.classList.contains('tot'));
+  if (st.col !== null) {
+    const sec = SECONDARY[id];
+    data.sort((a, b) => cellCmp(a.cells[st.col], b.cells[st.col]) * st.dir
+      || cellCmp(a.cells[sec], b.cells[sec]));
+    for (const r of [...data, ...tot]) head.parentNode.appendChild(r);
+  }
+  [...head.cells].forEach((th, i) => { th.dataset.sort = i === st.col ? (st.dir > 0 ? 'asc' : 'desc') : ''; });
+}
+
+for (const id of ['segTbl', 'cutTbl']) {
+  document.getElementById(id).addEventListener('click', e => {
+    const th = e.target.closest('th');
+    if (!th) return;
+    const st = tableSort[id];
+    if (st.col === th.cellIndex) st.dir = -st.dir;
+    else { st.col = th.cellIndex; st.dir = 1; }
+    applySort(id);
+  });
+}
+
+// Selects a segment by tag in both preview cards and highlights it in the drawing and tables.
+function selectSegment(tag) {
+  const idx = segmentList().findIndex(x => x.tag === tag);
+  if (idx >= 0) { previewIdx = idx; renderSegPreview(); }
+}
+
+// Clicking a segment row selects it in both preview cards and highlights it in the drawing.
+document.getElementById('segTbl').addEventListener('click', e => {
+  const tr = e.target.closest('tr');
+  if (!tr || tr.classList.contains('tot') || e.target.closest('th')) return;
+  selectSegment(tr.cells[0].textContent.trim().split(/\s+/)[0]);
+});
+
+// Clicking a warning selects its segment.
+document.getElementById('sum').addEventListener('click', e => {
+  const link = e.target.closest('[data-seg]');
+  if (link) selectSegment(link.dataset.seg);
+});
+
+function renderCalc() {
+  const c = readCalc();
+  const { rows, boards, cap, pieces } = calculate(c);
+  const link = (r, text) => `<span class="seg-link" data-seg="${r.tag}">${text}</span>`;
+  const warnings = rows.filter(r => r.pl <= 0 || r.pl > cap)
+    .map(r => link(r, `${r.tag}: detalės ilgis ${r.pl} mm netinka lentai (galima ${cap} mm)`))
+    .concat(rows.filter(r => r.gap < 0).map(r => link(r, `${r.tag}: lentos persidengia (tarpas ${r.gap.toFixed(0)} mm)`)))
+    .concat(rows.filter(r => isNaN(r.overlap)).map(r => link(r, `${r.tag}: segmentas per trumpas dviem lentoms`)))
+    .concat(rows.filter(r => r.offTarget).map(r => {
+      const alt = r.alts.length ? `. Alternatyvos: ${r.alts.map(a => `${a.front}+${a.back} – ${a.overlap.toFixed(0)} mm`).join(', ')}.` : '';
+      return link(r, `${r.tag}: ${r.front}+${r.back} persidengimas ${r.overlap.toFixed(0)} mm skiriasi daugiau nei 50 % nuo ${c.overlap} mm${alt}`);
+    }));
+
+  let seg = '<tr><th>Segmentas</th><th>Ilgis, mm</th><th>H, mm</th><th>Detalės ilgis, mm</th>' +
+    '<th>Detalių</th><th>Tarpas, mm</th><th>Persidengimas, mm</th></tr>';
+  let sumCount = 0;
+  for (const r of rows) {
+    sumCount += r.count;
+    const spare = r.count > r.base ? ` (+${r.count - r.base})` : '';
+    seg += `<tr><td><b>${r.tag}</b>${r.gate ? ' <span class="gate">vartai</span>' : ''}</td>` +
+      `<td>${r.len}</td><td>${r.h}</td><td>${r.pl}</td><td data-num="${r.count}">${r.front}+${r.back}${spare}</td>` +
+      `<td class="${r.gap < 0 ? 'bad' : ''}">${r.gap.toFixed(0)}</td>` +
+      `<td class="${r.offTarget ? 'bad' : ''}">${isNaN(r.overlap) ? '–' : r.overlap.toFixed(0)}</td></tr>`;
+  }
+  seg += `<tr class="tot"><td>Iš viso</td><td></td><td></td><td></td><td>${sumCount}</td><td></td><td></td></tr>`;
+  document.getElementById('segTbl').innerHTML = seg;
+
+  const groups = new Map();
+  boards.forEach(b => {
+    const lens = b.items.map(p => p.len).sort((x, y) => y - x);
+    const key = lens.join(' + ');
+    if (!groups.has(key)) groups.set(key, { lens, rem: b.rem, count: 0, tags: new Set() });
+    const g = groups.get(key);
+    g.count++;
+    b.items.forEach(p => g.tags.add(p.name));
+  });
+  const sortedGroups = [...groups.values()].sort((a, b) => b.count - a.count || b.lens[0] - a.lens[0]);
+  const fmtPieces = lens => {
+    const parts = [];
+    for (let i = 0; i < lens.length;) {
+      let j = i;
+      while (j < lens.length && lens[j] === lens[i]) j++;
+      parts.push(j - i > 1 ? `${lens[i]} x ${j - i}` : `${lens[i]}`);
+      i = j;
+    }
+    return parts.join(' + ');
+  };
+  let cut = '<tr><th>Pjūvis, mm</th><th>Lentų</th><th>Segmentai</th><th>Lentos likutis, mm</th></tr>';
+  sortedGroups.forEach(g => {
+    const tags = [...g.tags].sort(tagCmp).join(', ');
+    cut += `<tr><td>${fmtPieces(g.lens)}</td><td>${g.count}</td><td class="wrapcell" data-num="${g.tags.size}">${tags}</td>` +
+      `<td class="${g.rem < 0 ? 'bad' : ''}">${g.rem}</td></tr>`;
+  });
+  cut += `<tr class="tot"><td>Iš viso</td><td>${boards.length}</td><td></td><td></td></tr>`;
+  document.getElementById('cutTbl').innerHTML = cut;
+  applySort('segTbl');
+  applySort('cutTbl');
+
+  const N = boards.length;
+  const m3 = N * c.thick * c.width * c.stock / 1e9;
+  const eur = m3 * c.price;
+  const trimT = N * c.trim;
+  const kerfT = boards.reduce((s, b) => s + Math.max(0, b.items.length - 1) * c.kerf, 0);
+  const remT = boards.reduce((s, b) => s + b.rem, 0);
+  const totalLen = N * c.stock;
+  const unusedPct = (trimT + kerfT + remT) / totalLen * 100;
+
+  document.getElementById('sum').innerHTML =
+    `<div class="sumline">` +
+    `<b>Lentos (${c.stock} mm):</b> ${N} vnt. &nbsp; <b>Metrai:</b> ${(totalLen / 1000).toFixed(1)} m<br>` +
+    `<b>Tūris:</b> ${m3.toFixed(3)} m³ &nbsp; <b>Kaina:</b> ${eur.toFixed(0)} EUR be PVM / ${(eur * 1.21).toFixed(0)} EUR su PVM<br>` +
+    `<b>Detalių:</b> ${pieces.length}` +
+    (warnings.length ? `<div class="warn">${warnings.join('<br>')}</div>` : '') +
+    `</div>`;
+
+  document.getElementById('unused').innerHTML =
+    `<div class="sumline">` +
+    `<b>Galų nuostolis:</b> ${(trimT / 1000).toFixed(2)} m<br>` +
+    `<b>Pjūviai:</b> ${(kerfT / 1000).toFixed(2)} m<br>` +
+    `<b>Liekanos:</b> ${(remT / 1000).toFixed(2)} m<br>` +
+    `<b>Nepanaudota:</b> ${unusedPct.toFixed(1)}%` +
+    `</div>`;
+}
+
+let previewOn = false;
+function setPreview(on) {
+  previewOn = on;
+  document.body.classList.toggle('print-view', on);
+  document.body.classList.toggle('preview-on', on);
+  window.scrollTo(0, 0);
+}
+document.getElementById('pvOpen').addEventListener('click', () => setPreview(true));
+
+// Kebab menu in the header: copy, paste and print preview. Closes on item click, outside click or Escape.
+const menuBtn = document.getElementById('menuBtn'), menu = document.getElementById('menu');
+function setMenu(open) {
+  menu.classList.toggle('hidden', !open);
+  menuBtn.setAttribute('aria-expanded', String(open));
+}
+menuBtn.addEventListener('click', () => setMenu(menu.classList.contains('hidden')));
+menu.addEventListener('click', () => setMenu(false));
+document.addEventListener('click', e => { if (!e.target.closest('.menu')) setMenu(false); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
+document.getElementById('pvClose').addEventListener('click', () => setPreview(false));
+document.getElementById('pvPrint').addEventListener('click', () => window.print());
+window.addEventListener('beforeprint', () => { document.body.classList.add('print-view'); fitLabels(); });
+window.addEventListener('afterprint', () => { if (!previewOn) document.body.classList.remove('print-view'); fitLabels(); });
+
+let previewIdx = 0;
+
+function insetOf(joint, d) {
+  if (joint === 'brick') return d.brick.width / 2;
+  if (joint === 'brick2') return d.brick.width * 1.5;
+  if (joint === 'metal') return d.metalPillar.width / 2;
+  return 0;
+}
+
+function drawEnd(svg, joint, x, inward, d) {
+  const bw = d.brick.width, bd = d.brick.depth, mw = d.metalPillar.width, md = d.metalPillar.depth;
+  const brick = { fill: '#c46a4c', stroke: '#2b2b2b', 'stroke-width': 10 };
+  if (joint === 'brick') {
+    svg.appendChild(el('rect', { x: x - bw / 2, y: -bd / 2, width: bw, height: bd, ...brick }));
+  } else if (joint === 'brick2') {
+    const x0 = inward > 0 ? x - bw / 2 : x - bw / 2 - bw;
+    svg.appendChild(el('rect', { x: x0, y: -bd / 2, width: 2 * bw, height: bd, ...brick }));
+  } else if (joint === 'metal') {
+    svg.appendChild(el('rect', { x: x - mw / 2, y: -md / 2, width: mw, height: md, fill: '#2b2b2b' }));
+  }
+}
+
+// Both cards use the same scale: 1040px wide at most; narrower containers shrink the whole drawing, labels included.
+// One font size everywhere (12px). Drawing labels use it too, scaled with the drawing.
+const LABEL_PX = 12;
+const PLAN_PX = 960;
+const FAR_SHIFT = 2.4; // staggered horizontal labels move this many label sizes outward
+const LABEL_GAP_ABOVE = 820; // distance (mm) from the run's centre line to labels above it
+const LABEL_GAP_BELOW = 900; // same for labels below it
+const SEG_PX_PER_MM = 0.2; // fixed scale for every segment card: 1 px = 5 mm
+const SEG_PAD = 180; // end columns reach 160 mm past the segment ends; keep only a small margin beyond them
+const SEG_MIN_PX = 260; // narrowest segment card: the widest info line at 12 px is about 230 px
+const SEG_BOX_MARGIN = 60; // space above and below the drawing inside the segment box (mm)
+const SEG_DIM_Y = 380; // height of the width dimension line in segment drawings
+const SEG_CARDS = [
+  { svg: 'planSegPreview', sel: 'planSegSelect' }
+];
+
+const LABEL_CARDS = [
+  { svg: 'plan', ref: PLAN_PX, scalesOnPhone: true },
+  { svg: 'planSegPreview', scalesOnPhone: false }
+];
+
+// Drawing text is set in drawing units, so it is resized to show at LABEL_PX on screen and in print,
+// whatever the drawing's display scale is. On phones the schema shrinks as a whole, text included
+// (labels keep their drawing-unit size); the segment card keeps 12px text and only its drawing shrinks.
+const PHONE_QUERY = '(max-width: 640px)';
+function fitLabels() {
+  const phone = typeof matchMedia === 'function' && matchMedia(PHONE_QUERY).matches;
+  for (const card of LABEL_CARDS) {
+    const svg = document.getElementById(card.svg);
+    const vb = (svg.getAttribute('viewBox') || '').split(/\s+/).map(Number);
+    const shown = svg.getBoundingClientRect().width;
+    if (!vb[2] || !shown) continue;
+    const size = phone && card.scalesOnPhone ? LABEL_PX * vb[2] / card.ref : LABEL_PX * vb[2] / shown;
+    svg.querySelectorAll('text').forEach(t => t.setAttribute('font-size', size));
+    if (card.scalesOnPhone) continue;
+    // segment cards: text lines sit below the dimension at a size-relative offset; the box height is fixed
+    svg.querySelectorAll('text[data-off]').forEach(t => t.setAttribute('y', SEG_DIM_Y + Number(t.dataset.off) * size));
+  }
+}
+if (typeof ResizeObserver !== 'undefined') {
+  const observer = new ResizeObserver(fitLabels);
+  LABEL_CARDS.forEach(card => observer.observe(document.getElementById(card.svg)));
+}
+
+// Both cards (calculator and schema) show the same segment at the same scale.
+function renderSegPreview() {
+  const list = segmentList();
+  if (!list.length) return;
+  previewIdx = ((previewIdx % list.length) + list.length) % list.length;
+  const s = list[previewIdx];
+  // fixed scale: the box is sized from this segment's own length, so every segment is drawn at the same scale
+  // the box is never narrower than SEG_MIN_PX, so the info lines below are not clipped
+  const boxPx = Math.max((s.len + 2 * SEG_PAD) * SEG_PX_PER_MM, SEG_MIN_PX);
+  const boxW = boxPx / SEG_PX_PER_MM, vbX0 = s.len / 2 - boxW / 2; // segment centred horizontally
+  // one height for every segment: from the top of the columns to the bottom of the info lines, plus a margin,
+  // centred vertically, so the box does not change height when stepping through segments
+  const fs = LABEL_PX / SEG_PX_PER_MM; // label size in drawing units at the fixed scale
+  const contentTop = -DATA.dimensions.brick.depth / 2, contentBottom = SEG_DIM_Y + fs * 5.6;
+  const boxH = contentBottom - contentTop + 2 * SEG_BOX_MARGIN;
+  const vbY0 = (contentTop + contentBottom) / 2 - boxH / 2;
+  const options = list.map((x, i) => `<option value="${i}">${x.tag} (${i + 1}/${list.length})</option>`).join('');
+
+  for (const card of SEG_CARDS) {
+    const svg = document.getElementById(card.svg), sel = document.getElementById(card.sel);
+    sel.innerHTML = options;
+    sel.value = String(previewIdx);
+    svg.setAttribute('viewBox', `${vbX0} ${vbY0} ${boxW} ${boxH}`);
+    svg.style.width = `${boxPx}px`;
+    svg.style.height = `${boxH * SEG_PX_PER_MM}px`;
+    svg.innerHTML = '';
+    drawSegment(svg, s, fs);
+  }
+  highlightSegment(s.tag);
+  fitLabels();
+}
+
+// Highlights the selected segment: its row in both tables, its glow and label in the schema.
+// Screen only: all highlight styles are scoped to body:not(.print-view), and the glow is hidden in print.
+function highlightSegment(tag) {
+  document.querySelectorAll('#segTbl tr.hl, #cutTbl tr.hl').forEach(r => r.classList.remove('hl'));
+  document.querySelectorAll('#plan .hl-glow').forEach(e => e.remove());
+  document.querySelectorAll('#plan text.hl').forEach(e => e.classList.remove('hl'));
+  document.querySelectorAll('#plan line.hl-fill').forEach(e => e.classList.remove('hl-fill'));
+  if (!tag) return;
+  for (const r of document.querySelectorAll('#segTbl tr')) {
+    if (r.cells[0] && r.cells[0].textContent.trim().split(/\s+/)[0] === tag) r.classList.add('hl');
+  }
+  for (const r of document.querySelectorAll('#cutTbl tr')) {
+    if (r.cells[2] && r.cells[2].textContent.split(',').map(t => t.trim()).includes(tag)) r.classList.add('hl');
+  }
+  const seg = document.querySelector(`#plan line[data-tag="${tag}"]`);
+  if (seg) {
+    const glow = seg.cloneNode(false);
+    glow.removeAttribute('data-seg');
+    glow.removeAttribute('data-tag');
+    glow.removeAttribute('stroke-dasharray');
+    glow.setAttribute('class', 'hl-glow');
+    glow.setAttribute('stroke', '#d6e8f7');
+    glow.setAttribute('stroke-width', String(DATA.dimensions.foundationWidth + 90));
+    seg.parentNode.insertBefore(glow, seg);
+    document.querySelectorAll(`#plan line[data-tag="${tag}"][stroke="#fbfaf6"]`).forEach(l => l.classList.add('hl-fill'));
+  }
+  document.querySelectorAll(`#plan g[data-tag="${tag}"] text`).forEach(t => t.classList.add('hl'));
+}
+
+// Draws one segment (columns, boards, cross-brace, width dimension, labels) into svg at the current coordinates.
+function drawSegment(svg, s, fs) {
+  const d = DATA.dimensions, c = readCalc(), L = s.len, t = c.thick, cw = c.width;
+  const fit = chooseBoards(s, c);
+  const boardStroke = s.gate ? '#b5651d' : '#8a6a4a';
+  const cb = d.crossbrace;
+  const half = cb.width / 2;
+  const faceY = [-half - t, half];
+  const insetL = insetOf(s.startJoint, d), insetR = insetOf(s.endJoint, d);
+  for (let k = 0; k < fit.total; k++) {
+    const x = insetL + k * fit.spacing;
+    svg.appendChild(el('rect', { x, y: faceY[k % 2], width: cw, height: t, fill: '#f3e6cf', stroke: boardStroke, 'stroke-width': 5 }));
+  }
+  svg.appendChild(el('rect', { x: insetL, y: -cb.width / 2, width: fit.span, height: cb.width, fill: '#6b6b6b' }));
+
+  drawEnd(svg, s.startJoint, 0, +1, d);
+  drawEnd(svg, s.endJoint, L, -1, d);
+
+  // width dimension between the inner faces of the end columns
+  const x0 = insetL, x1 = L - insetR, dy = SEG_DIM_Y, ar = 45;
+  const dim = { stroke: '#2b2b2b', 'stroke-width': 4, fill: 'none' };
+  svg.appendChild(el('line', { x1: x0, y1: 170, x2: x0, y2: dy + 60, ...dim }));
+  svg.appendChild(el('line', { x1: x1, y1: 170, x2: x1, y2: dy + 60, ...dim }));
+  svg.appendChild(el('line', { x1: x0, y1: dy, x2: x1, y2: dy, ...dim }));
+  svg.appendChild(el('path', { d: `M${x0 + ar} ${dy - 22} L${x0} ${dy} L${x0 + ar} ${dy + 22}`, ...dim }));
+  svg.appendChild(el('path', { d: `M${x1 - ar} ${dy - 22} L${x1} ${dy} L${x1 - ar} ${dy + 22}`, ...dim }));
+
+  const mid = (x0 + x1) / 2;
+  svg.appendChild(el('text', { x: mid, y: dy, 'data-off': 1.8, 'font-size': fs, 'font-weight': 700, 'text-anchor': 'middle', fill: '#111', 'font-family': 'Arial' }, `${s.len}${s.gate ? ' · vartai' : ''}`));
+  svg.appendChild(el('text', { x: mid, y: dy, 'data-off': 3.6, 'font-size': fs, 'text-anchor': 'middle', fill: '#555', 'font-family': 'Arial' }, `Detalės aukštis ${s.h - c.topGap - c.bottomGap} · detalių ${fit.front}+${fit.back}`));
+  svg.appendChild(el('text', { x: mid, y: dy, 'data-off': 5.1, 'font-size': fs, 'text-anchor': 'middle', fill: '#555', 'font-family': 'Arial' }, `Tarpas ${fit.gap.toFixed(0)} mm · Persidengimas ${fit.overlap.toFixed(0)} mm`));
+}
+
+document.getElementById('planSegPrev').addEventListener('click', () => { previewIdx--; renderSegPreview(); });
+document.getElementById('planSegNext').addEventListener('click', () => { previewIdx++; renderSegPreview(); });
+document.getElementById('planSegSelect').addEventListener('change', e => { previewIdx = +e.target.value; renderSegPreview(); });
+
+
+
+
+document.querySelectorAll('#viewCalc input').forEach(i => i.addEventListener('input', () => render()));
+
+const jsonDlg = document.getElementById('jsonDlg');
+const jsonText = document.getElementById('jsonText');
+const msg = document.getElementById('msg');
+
+function flash(text, isError) {
+  msg.textContent = text;
+  msg.classList.toggle('err', !!isError);
+  msg.classList.add('show');
+  clearTimeout(flash.t);
+  flash.t = setTimeout(() => msg.classList.remove('show'), 2500);
+}
+
+function copyText(text) {
+  if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  const ok = document.execCommand('copy');
+  ta.remove();
+  return ok ? Promise.resolve() : Promise.reject(new Error('execCommand copy failed'));
+}
+
+const JOINTS = ['brick', 'brick2', 'metal', 'none'];
+
+function validate(d) {
+  const fail = m => { throw new Error(m); };
+  if (!d || !Array.isArray(d.sections)) fail('Trūksta "sections" masyvo.');
+  const dm = d.dimensions;
+  const isNum = v => typeof v === 'number';
+  if (!dm || !dm.brick || !isNum(dm.brick.width) || !isNum(dm.brick.depth) || !isNum(dm.foundationWidth)
+    || !dm.metalPillar || !isNum(dm.metalPillar.width) || !isNum(dm.metalPillar.depth)
+    || !dm.crossbrace || !isNum(dm.crossbrace.width) || !isNum(dm.crossbrace.length) || !isNum(dm.crossbrace.offsetFromTop))
+    fail('Trūksta "dimensions" matmenų (brick, foundationWidth, metalPillar, crossbrace).');
+  d.sections.forEach((sec, i) => {
+    const where = `sections[${i}]`;
+    if (typeof sec.id !== 'string') fail(`${where}: "id" turi būti tekstas.`);
+    for (const k of ['originX', 'originY']) if (typeof sec[k] !== 'number') fail(`${where}: "${k}" turi būti skaičius.`);
+    if (!sec.labelOffset || typeof sec.labelOffset.offsetX !== 'number' || typeof sec.labelOffset.offsetY !== 'number')
+      fail(`${where}: "labelOffset" turi turėti offsetX ir offsetY.`);
+    if (!Array.isArray(sec.runs)) fail(`${where}: "runs" turi būti masyvas.`);
+    sec.runs.forEach((run, r) => {
+      const rw = `${where}.runs[${r}]`;
+      if (!DIR[run.direction]) fail(`${rw}: "direction" turi būti E, W, N arba S.`);
+      if (!JOINTS.includes(run.startJoint)) fail(`${rw}: neteisinga "startJoint" reikšmė.`);
+      if (typeof run.startX !== 'number' || typeof run.startY !== 'number') fail(`${rw}: "startX" ir "startY" turi būti skaičiai.`);
+      if (!Array.isArray(run.segments)) fail(`${rw}: "segments" turi būti masyvas.`);
+      run.segments.forEach((s, g) => {
+        const sw = `${rw}.segments[${g}]`;
+        if (typeof s.length !== 'number' || typeof s.height !== 'number') fail(`${sw}: "length" ir "height" turi būti skaičiai.`);
+        if (!JOINTS.includes(s.joint)) fail(`${sw}: neteisinga "joint" reikšmė.`);
+      });
+    });
+    (sec.extensions || []).forEach((e, x) => {
+      if (!DIR[e.direction] || typeof e.length !== 'number' || typeof e.runIndex !== 'number' || typeof e.afterSegment !== 'number')
+        fail(`${where}.extensions[${x}]: reikia runIndex, afterSegment, direction ir length.`);
+    });
+  });
+  return d;
+}
+
+document.getElementById('copyJson').addEventListener('click', () => {
+  copyText(JSON.stringify(toExternal(DATA), null, 2))
+    .then(() => flash('JSON nukopijuotas'))
+    .catch(() => flash('Nepavyko nukopijuoti', true));
+});
+
+document.getElementById('pasteJson').addEventListener('click', () => {
+  jsonText.value = '';
+  document.getElementById('jsonErr').textContent = '';
+  openModal(jsonDlg);
+  jsonText.focus();
+});
+
+document.getElementById('jsonCancel').addEventListener('click', () => jsonDlg.close());
+document.getElementById('jsonX').addEventListener('click', () => jsonDlg.close());
+
+// Opening a dialog locks the page behind it from scrolling; closing (by any route) releases it.
+for (const d of [dlg, jsonDlg]) d.addEventListener('close', () => document.body.classList.remove('modal-open'));
+
+document.getElementById('jsonLoad').addEventListener('click', () => {
+  const err = document.getElementById('jsonErr');
+  let parsed;
+  try {
+    parsed = validate(JSON.parse(jsonText.value));
+  } catch (e) {
+    err.textContent = 'Klaida: ' + e.message;
+    return;
+  }
+  DATA = withFixedDimensions(toInternal(parsed));
+  jsonDlg.close();
+  render();
+  flash('JSON įkeltas');
+});
+
+document.getElementById('reset').addEventListener('click', () => {
+  if (!confirm('Atstatyti numatytas reikšmes? Visi išsaugoti schemos ir skaičiuoklės pakeitimai bus prarasti.')) return;
+  DATA = toInternal(DEFAULT);
+  document.querySelectorAll('#viewCalc input').forEach(i => { i.value = i.defaultValue; });
+  render();
+  flash('Atstatyta į numatytas reikšmes');
+});
+
+DATA = loadSaved();
+loadCalc();
+render();
+</script>
+</body>
+</html>
