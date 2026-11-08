@@ -980,7 +980,10 @@ document.getElementById('planSegSelect').addEventListener('change', e => { previ
 
 
 
-document.querySelectorAll('#viewCalc input').forEach(i => i.addEventListener('input', () => render()));
+document.querySelectorAll('#viewCalc input').forEach(i => i.addEventListener('change', () => {
+  render();
+  flash('Skaičiavimas atnaujintas');
+}));
 
 const jsonDlg = document.getElementById('jsonDlg');
 const jsonText = document.getElementById('jsonText');
